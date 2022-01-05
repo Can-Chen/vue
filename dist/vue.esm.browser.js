@@ -40,7 +40,7 @@ function isPrimitive (value) {
 
 /**
  * Quick object check - this is primarily used to tell
- * Objects from primitive values when we know the value
+ * objects from primitive values when we know the value
  * is a JSON-compliant type.
  */
 function isObject (obj) {
@@ -5724,6 +5724,8 @@ const isTextInputType = makeMap('text,number,password,search,email,tel,url');
 /**
  * Query an element selector if it's not an element already.
  */
+
+// 判断el是DOM对象还是字符串选择器
 function query (el) {
   if (typeof el === 'string') {
     const selected = document.querySelector(el);
@@ -7633,7 +7635,9 @@ function updateDOMListeners (oldVnode, vnode) {
   }
   const on = vnode.data.on || {};
   const oldOn = oldVnode.data.on || {};
-  target$1 = vnode.elm;
+  // vnode is empty when removing all listeners,
+  // and use old vnode dom element
+  target$1 = vnode.elm || oldVnode.elm;
   normalizeEvents(on);
   updateListeners(on, oldOn, add$1, remove$2, createOnceHandler$1, vnode.context);
   target$1 = undefined;
@@ -7641,7 +7645,8 @@ function updateDOMListeners (oldVnode, vnode) {
 
 var events = {
   create: updateDOMListeners,
-  update: updateDOMListeners
+  update: updateDOMListeners,
+  destroy: (vnode) => updateDOMListeners(vnode, emptyNode)
 };
 
 /*  */
@@ -9187,7 +9192,7 @@ function transformNode (el, options) {
     }
   }
   if (staticClass) {
-    el.staticClass = JSON.stringify(staticClass);
+    el.staticClass = JSON.stringify(staticClass.replace(/\s+/g, ' ').trim());
   }
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */);
   if (classBinding) {
@@ -11972,14 +11977,24 @@ const idToTemplate = cached(id => {
   return el && el.innerHTML
 });
 
+// 保留vue实例的$mount方法
 const mount = Vue.prototype.$mount;
+
+/**
+ * 如果同时传递template和render会执行谁？
+ * 从下面的if语句中可以看到，很显然执行render函数
+ */
+
 Vue.prototype.$mount = function (
   el,
   hydrating
 ) {
+
+  // 获取el对象 如果传了el 使用query处理el
   el = el && query(el);
 
   /* istanbul ignore if */
+  // el不能是 body 或 html
   if (el === document.body || el === document.documentElement) {
     warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -11989,7 +12004,10 @@ Vue.prototype.$mount = function (
 
   const options = this.$options;
   // resolve template/el and convert to render function
+
+  // options是否存在render
   if (!options.render) {
+    // 如果没有render会去取template转换成render
     let template = options.template;
     if (template) {
       if (typeof template === 'string') {
@@ -12012,6 +12030,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 渲染DOM
       template = getOuterHTML(el);
     }
     if (template) {

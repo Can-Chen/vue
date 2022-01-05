@@ -9,4 +9,5 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// 缓存dom操作指令 ref 事件 柯里化
 export const patch: Function = createPatchFunction({ nodeOps, modules })

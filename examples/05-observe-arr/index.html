@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>observe</title>
+</head>
+<body>
+  <div id="app">
+    {{ arr }}
+  </div>
+
+  <script src="../../dist/vue.js"></script>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        arr: [2, 3, 5]
+      }
+    });
+
+    /**
+     * 数据响应式处理的核心过程和数组收集依赖的过程
+     * 当数组的数据改变的时候watcher的执行过程
+     **/
+
+    // 视图会更新
+    // 修补了数组的原生方法 具有响应式能力
+    vm.arr.push(8)
+    vm.arr[0] = 100 // 不会更新
+    vm.arr.length = 0 // 不会更新
+    
+  </script>
+</body>
+</html>

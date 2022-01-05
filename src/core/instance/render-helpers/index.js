@@ -12,6 +12,7 @@ import { bindObjectListeners } from './bind-object-listeners'
 import { resolveScopedSlots } from './resolve-scoped-slots'
 import { bindDynamicKeys, prependModifier } from './bind-dynamic-keys'
 
+// 模版编译成render函数时用到
 export function installRenderHelpers (target: any) {
   target._o = markOnce
   target._n = toNumber
@@ -24,6 +25,7 @@ export function installRenderHelpers (target: any) {
   target._f = resolveFilter
   target._k = checkKeyCodes
   target._b = bindObjectProps
+  // 创建文本虚拟节点
   target._v = createTextVNode
   target._e = createEmptyVNode
   target._u = resolveScopedSlots

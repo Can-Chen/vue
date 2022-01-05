@@ -43,20 +43,32 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.set = function proxySetter (val) {
     this[sourceKey][key] = val
   }
+
+  // target vue实例
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
+  // 把props成员转换成响应式 注入到vue实例中
   if (opts.props) initProps(vm, opts.props)
+
+  // 把选项中的methods注入到vue实例中
   if (opts.methods) initMethods(vm, opts.methods)
+
+  // 
   if (opts.data) {
+    // 设置为响应式数据
     initData(vm)
   } else {
+    // 不存在初始化一个空对象 设置为响应式
     observe(vm._data = {}, true /* asRootData */)
   }
+
+  // 计算属性
   if (opts.computed) initComputed(vm, opts.computed)
+  // 监听器
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -73,6 +85,7 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) {
     toggleObserving(false)
   }
+  // props中的属性
   for (const key in propsOptions) {
     keys.push(key)
     const value = validateProp(key, propsOptions, propsData, vm)
@@ -86,6 +99,7 @@ function initProps (vm: Component, propsOptions: Object) {
           vm
         )
       }
+      // vm._props
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
@@ -103,6 +117,7 @@ function initProps (vm: Component, propsOptions: Object) {
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
+    // props是否在vue实例中存在
     if (!(key in vm)) {
       proxy(vm, `_props`, key)
     }
@@ -112,6 +127,9 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
+
+  // 初始化 _data 组件中data是函数，调用函数返回结果
+  // 否则直接返回 data
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -124,10 +142,14 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  // 获取data中所有属性
   const keys = Object.keys(data)
+  // 获取props methods
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length
+
+  // 判断data上的成员是否和 props/methods重名
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
@@ -149,6 +171,8 @@ function initData (vm: Component) {
     }
   }
   // observe data
+
+  // 响应式处理
   observe(data, true /* asRootData */)
 }
 
@@ -263,6 +287,7 @@ function createGetterInvoker(fn) {
 }
 
 function initMethods (vm: Component, methods: Object) {
+
   const props = vm.$options.props
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
@@ -286,6 +311,8 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
+
+    // 函数注入到vm中 并指向vm
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }
@@ -342,6 +369,7 @@ export function stateMixin (Vue: Class<Component>) {
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 
+  // Vue.$set Vue.$delete
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
 
@@ -350,19 +378,26 @@ export function stateMixin (Vue: Class<Component>) {
     cb: any,
     options?: Object
   ): Function {
+    // 获取Vue实例 this
     const vm: Component = this
     if (isPlainObject(cb)) {
+      // 判断如果 cb是对象执行createWatcher
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
-    options.user = true
+    // 标记用户watcher
+    options.user = true // 用户watcher执行回掉需要加上trycatch
+    // 创建用户 watcher对象
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 判断是否立即执行函数
     if (options.immediate) {
       const info = `callback for immediate watcher "${watcher.expression}"`
       pushTarget()
+      // 立即执行一次cb回掉 并且把当前值传入
       invokeWithErrorHandling(cb, vm, [watcher.value], vm, info)
       popTarget()
     }
+    // 取消监听方法
     return function unwatchFn () {
       watcher.teardown()
     }

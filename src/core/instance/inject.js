@@ -14,6 +14,8 @@ export function initProvide (vm: Component) {
 }
 
 export function initInjections (vm: Component) {
+  // inject对象中的所有属性，并且这些属性在vm._provided存在的属性提取出来放到result
+  // 也就是在父组件provide提供了属性
   const result = resolveInject(vm.$options.inject, vm)
   if (result) {
     toggleObserving(false)

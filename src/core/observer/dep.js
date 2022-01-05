@@ -20,6 +20,7 @@ export default class Dep {
     this.subs = []
   }
 
+  // 添加新的订阅者
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
@@ -34,15 +35,17 @@ export default class Dep {
     }
   }
 
+  // 发送更新通知
   notify () {
     // stabilize the subscriber list first
-    const subs = this.subs.slice()
+    const subs = this.subs.slice() //对这个数组进行克隆
     if (process.env.NODE_ENV !== 'production' && !config.async) {
       // subs aren't sorted in scheduler if not running async
       // we need to sort them now to make sure they fire in correct
       // order
-      subs.sort((a, b) => a.id - b.id)
+      subs.sort((a, b) => a.id - b.id) // 排序 保证执行watcher顺序是正确的
     }
+    // 调用每个订阅者的update方法实现更新
     for (let i = 0, l = subs.length; i < l; i++) {
       subs[i].update()
     }
@@ -52,9 +55,12 @@ export default class Dep {
 // The current target watcher being evaluated.
 // This is globally unique because only one watcher
 // can be evaluated at a time.
+// Dep.target 用来存放目前正在使用的watcher
+// 全局唯一，并且一次也只能有一个watcher被使用
 Dep.target = null
 const targetStack = []
 
+// 入栈并将当前watcher赋值给Dep.target
 export function pushTarget (target: ?Watcher) {
   targetStack.push(target)
   Dep.target = target

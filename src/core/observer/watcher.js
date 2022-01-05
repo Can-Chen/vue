@@ -24,6 +24,10 @@ let uid = 0
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
+
+// 1. computed watcher
+// 2. 用户watcher
+// 3. 渲染watcher
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -44,31 +48,31 @@ export default class Watcher {
   value: any;
 
   constructor (
-    vm: Component,
-    expOrFn: string | Function,
+    vm: Component, // vue实例
+    expOrFn: string | Function, // 渲染watcher 是updateComponent
     cb: Function,
     options?: ?Object,
-    isRenderWatcher?: boolean
+    isRenderWatcher?: boolean // 是否是渲染watcher
   ) {
     this.vm = vm
     if (isRenderWatcher) {
       vm._watcher = this
     }
-    vm._watchers.push(this)
+    vm._watchers.push(this) // 存储所有watcher
     // options
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      this.lazy = !!options.lazy
+      this.lazy = !!options.lazy // 是否延迟更新视图？ 首次挂载是undefined
       this.sync = !!options.sync
       this.before = options.before
     } else {
       this.deep = this.user = this.lazy = this.sync = false
     }
     this.cb = cb
-    this.id = ++uid // uid for batching
-    this.active = true
-    this.dirty = this.lazy // for lazy watchers
+    this.id = ++uid // uid for batching 唯一标识watcher
+    this.active = true // 标识watcher是否是活动的
+    this.dirty = this.lazy // for lazy watchers // 在计算属性中，会对属性进行求值 这里先不调用
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
@@ -80,6 +84,8 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
+      // 为字符串时 例如 watch: { 'person.name': function }
+      // parsePath('person.name') 返回一个函数获取 person.name 的值
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -100,11 +106,11 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
-    pushTarget(this)
+    pushTarget(this) // 把watcher推入到栈中，父子组件嵌套先保存父组件的watcher对象
     let value
     const vm = this.vm
     try {
-      value = this.getter.call(vm, vm)
+      value = this.getter.call(vm, vm) // 调用updateComponent
     } catch (e) {
       if (this.user) {
         handleError(e, vm, `getter for watcher "${this.expression}"`)
@@ -117,8 +123,8 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
-      popTarget()
-      this.cleanupDeps()
+      popTarget() // 把watcher弹出
+      this.cleanupDeps() // watcher从dep移除
     }
     return value
   }
@@ -128,6 +134,8 @@ export default class Watcher {
    */
   addDep (dep: Dep) {
     const id = dep.id
+
+    // 引用同一个响应式属性时 不用收集多个一样的依赖
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
@@ -169,7 +177,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
-      queueWatcher(this)
+      queueWatcher(this) // 把当前watcher放到队列中
     }
   }
 
@@ -178,7 +186,9 @@ export default class Watcher {
    * Will be called by the scheduler.
    */
   run () {
-    if (this.active) {
+    if (this.active) { // 是否存活状态
+      // 渲染watcher没有返回值
+      // 用户watcher存在
       const value = this.get()
       if (
         value !== this.value ||

@@ -42,7 +42,7 @@ function isPrimitive (value) {
 
 /**
  * Quick object check - this is primarily used to tell
- * Objects from primitive values when we know the value
+ * objects from primitive values when we know the value
  * is a JSON-compliant type.
  */
 function isObject (obj) {
@@ -5688,6 +5688,8 @@ var isTextInputType = makeMap('text,number,password,search,email,tel,url');
 /**
  * Query an element selector if it's not an element already.
  */
+
+// 判断el是DOM对象还是字符串选择器
 function query (el) {
   if (typeof el === 'string') {
     var selected = document.querySelector(el);
@@ -6968,7 +6970,9 @@ function updateDOMListeners (oldVnode, vnode) {
   }
   var on = vnode.data.on || {};
   var oldOn = oldVnode.data.on || {};
-  target$1 = vnode.elm;
+  // vnode is empty when removing all listeners,
+  // and use old vnode dom element
+  target$1 = vnode.elm || oldVnode.elm;
   normalizeEvents(on);
   updateListeners(on, oldOn, add$1, remove$2, createOnceHandler$1, vnode.context);
   target$1 = undefined;
@@ -6976,7 +6980,8 @@ function updateDOMListeners (oldVnode, vnode) {
 
 var events = {
   create: updateDOMListeners,
-  update: updateDOMListeners
+  update: updateDOMListeners,
+  destroy: function (vnode) { return updateDOMListeners(vnode, emptyNode); }
 };
 
 /*  */

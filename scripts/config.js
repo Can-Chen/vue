@@ -259,7 +259,7 @@ function genConfig (name) {
     enumerable: false,
     value: name
   })
-
+  // 入口 platforms/web/entry-runtime-with-compiler
   return config
 }
 

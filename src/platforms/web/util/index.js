@@ -9,6 +9,8 @@ export * from './element'
 /**
  * Query an element selector if it's not an element already.
  */
+
+// 判断el是DOM对象还是字符串选择器
 export function query (el: string | Element): Element {
   if (typeof el === 'string') {
     const selected = document.querySelector(el)

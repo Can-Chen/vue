@@ -13,7 +13,10 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
+  // 给vue原型挂载_init 方法
   Vue.prototype._init = function (options?: Object) {
+
+    // 当前vue实例
     const vm: Component = this
     // a uid
     vm._uid = uid++
@@ -27,7 +30,9 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
+    // 当前实例是VUe不需要被Observer
     vm._isVue = true
+
     // merge options
     if (options && options._isComponent) {
       // optimize internal component instantiation
@@ -45,17 +50,35 @@ export function initMixin (Vue: Class<Component>) {
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm)
     } else {
+      // 渲染代理对象
       vm._renderProxy = vm
     }
     // expose real self
     vm._self = vm
+    // vm生命周期相关变量初始化
+    // $children/$parent/$root/$refs
     initLifecycle(vm)
+
+    // vm 的事件监听初始化，父组件绑定在当前组件上的事件
     initEvents(vm)
+
+    // vm 编译render初始化
+    // $slots/$scopedSlots/$_c/$createElement/$attrs/$listeners
     initRender(vm)
+
+    // beforeCreate生命钩子的回掉
     callHook(vm, 'beforeCreate')
+
+    // 把inject的成员注入到vm上
     initInjections(vm) // resolve injections before data/props
+
+    // 初始化 vm 的 _props/methods/_data/computed/watch
     initState(vm)
+
+    // 初始化 provide
     initProvide(vm) // resolve provide after data/props
+
+    // created 生命钩子的回掉
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -65,6 +88,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 调用 $mount挂载 渲染整个页面
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }

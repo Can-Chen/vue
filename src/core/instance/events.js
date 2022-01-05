@@ -10,11 +10,17 @@ import {
 import { updateListeners } from '../vdom/helpers/index'
 
 export function initEvents (vm: Component) {
+
+  // 空对象 原型为null
+  // 在$on中添加事件类型时使用 是一个数组类型 (vm._events[type] = (vm._events[type] ||[])).push(event)
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
+  // 获取父组件自定义事件
   const listeners = vm.$options._parentListeners
   if (listeners) {
+
+    // 注册自定义事件
     updateComponentListeners(vm, listeners)
   }
 }

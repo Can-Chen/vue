@@ -16,6 +16,8 @@ export function initExtend (Vue: GlobalAPI) {
   /**
    * Class inheritance
    */
+
+  // 返回组件的构造函数
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
@@ -30,12 +32,17 @@ export function initExtend (Vue: GlobalAPI) {
       validateComponentName(name)
     }
 
+    // 创建一个构造函数
     const Sub = function VueComponent (options) {
       this._init(options)
     }
+
+    // 原型继承Vue
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
+
+    // 合并options
     Sub.options = mergeOptions(
       Super.options,
       extendOptions
@@ -63,6 +70,7 @@ export function initExtend (Vue: GlobalAPI) {
       Sub[type] = Super[type]
     })
     // enable recursive self-lookup
+    // 把组件的构造函数保存到Ctor.options.components.comp = Ctor
     if (name) {
       Sub.options.components[name] = Sub
     }
@@ -75,6 +83,7 @@ export function initExtend (Vue: GlobalAPI) {
     Sub.sealedOptions = extend({}, Sub.options)
 
     // cache constructor
+    // 把组件的构造函数缓存到options._Ctor
     cachedCtors[SuperId] = Sub
     return Sub
   }
