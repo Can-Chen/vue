@@ -8,6 +8,8 @@
 <body>
   <div id="app">
     Hello World
+
+    <h3>{{ msg }}</h3>
   </div>
 
   <script src="../../dist/vue.js"></script>
@@ -21,10 +23,14 @@
 
     const vm = new Vue({
       el: '#app',
-      template: '<h1>Hello Template</h1>',
-      render(h) {
-        return h('h1', 'Hello Render')
+      // template: '<h1>Hello Template <h3>{{ msg }}</h3> </h1>',
+      // template: "#app",
+      data: {
+        msg: 'cc'
       }
+      // render(h) {
+      //   return h('h1', 'Hello Render')
+      // }
     })
   </script>
 </body>

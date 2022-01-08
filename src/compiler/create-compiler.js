@@ -5,12 +5,15 @@ import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
+  // baseOptions 平台相关的 options
+  // src platforms web compiler options 中定义
   return function createCompiler (baseOptions: CompilerOptions) {
     function compile (
       template: string,
-      options?: CompilerOptions
+      options?: CompilerOptions // 用户传入的选项
     ): CompiledResult {
-      const finalOptions = Object.create(baseOptions)
+      const finalOptions = Object.create(baseOptions) // 合并baseOptions和compileOptions
+      // 存储编译过程中的错误和信息
       const errors = []
       const tips = []
 
@@ -18,6 +21,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
         (tip ? tips : errors).push(msg)
       }
 
+      // 合并options和baseOptions
       if (options) {
         if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
           // $flow-disable-line

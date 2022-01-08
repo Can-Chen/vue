@@ -21,7 +21,7 @@ export function installRenderHelpers (target: any) {
   target._t = renderSlot
   target._q = looseEqual
   target._i = looseIndexOf
-  target._m = renderStatic
+  target._m = renderStatic // 处理静态内容 没有插值表达式
   target._f = resolveFilter
   target._k = checkKeyCodes
   target._b = bindObjectProps

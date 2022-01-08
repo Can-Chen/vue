@@ -30,8 +30,8 @@ export class CodegenState {
     const isReservedTag = options.isReservedTag || no
     this.maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
     this.onceId = 0
-    this.staticRenderFns = []
-    this.pre = false
+    this.staticRenderFns = [] // 存储静态根节点生成的代码
+    this.pre = false // 当前处理的节点是否为v-pre标记的
   }
 }
 
@@ -55,10 +55,10 @@ export function generate (
 
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
-    el.pre = el.pre || el.parent.pre
+    el.pre = el.pre || el.parent.pre // 父节点标记子节点代表也是
   }
 
-  if (el.staticRoot && !el.staticProcessed) {
+  if (el.staticRoot && !el.staticProcessed) {// 防止重复处理
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
     return genOnce(el, state)
@@ -66,7 +66,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     return genFor(el, state)
   } else if (el.if && !el.ifProcessed) {
     return genIf(el, state)
-  } else if (el.tag === 'template' && !el.slotTarget && !state.pre) {
+  } else if (el.tag === 'template' && !el.slotTarget && !state.pre) { // 不是静态的
     return genChildren(el, state) || 'void 0'
   } else if (el.tag === 'slot') {
     return genSlot(el, state)

@@ -205,6 +205,7 @@ export function parse (
     }
   }
 
+  // 解析html模板
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -225,6 +226,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 创建ast对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -269,6 +271,7 @@ export function parse (
       }
 
       if (!inVPre) {
+        // v-pre 指令
         processPre(element)
         if (element.pre) {
           inVPre = true
@@ -281,8 +284,11 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // v-for
         processFor(element)
+        // v-if
         processIf(element)
+        // v-once
         processOnce(element)
       }
 

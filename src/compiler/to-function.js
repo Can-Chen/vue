@@ -19,6 +19,7 @@ function createFunction (code, errors) {
 }
 
 export function createCompileToFunctionFn (compile: Function): Function {
+  // 通过闭包缓存编译后的结果
   const cache = Object.create(null)
 
   return function compileToFunctions (
@@ -49,6 +50,8 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // check cache
+    // 读取缓存中的 compiledFunctionResult 对象 如果有直接返回
+    // 拿空间换时间
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
@@ -57,6 +60,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // compile
+    // 把模板编译为编译对象 字符串形式的js代码
     const compiled = compile(template, options)
 
     // check compilation errors/tips
@@ -88,8 +92,9 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // turn code into functions
+    // 把字符串形式的js代码转换成js方法
     const res = {}
-    const fnGenErrors = []
+    const fnGenErrors = [] // 收集错误信息
     res.render = createFunction(compiled.render, fnGenErrors)
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
@@ -109,6 +114,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    // 缓存并返回res对象 （render staticRenderFus方法）
     return (cache[key] = res)
   }
 }
